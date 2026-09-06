@@ -13,12 +13,12 @@ The goal in the v0.# versions is to set up an environment where implementing dif
 **Capabilities:**
 - screen for displaying the values as columns (higher column = bigger value)
 - resizable screen, columns adapt to screen size automatically
+- a simple way to reshuffle the list
+- a simple way to save, and load saved datasets
 
 **Plans:**
 - a simple way of choosing the current sorting algorithm to be ran
-- a simple way to reshuffle the list
 - a way to track the efficiency of each sorting algorithm
-- a way to run multiple sorting algorithms on the same dataset, and compare these results
 - a way to show which columns the sorting algorithm compares at a given time (highlighting)
 - *audio-visual features*?
 
