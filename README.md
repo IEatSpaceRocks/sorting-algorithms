@@ -1,4 +1,4 @@
-*Last updated: 04/09/2026*
+*Last updated: 06/09/2026*
 # Sorting Algorithms
 This repository contains my sorting algorithms project. In the following I will explain each separate version, my plans and already achieved capabilities:
 
