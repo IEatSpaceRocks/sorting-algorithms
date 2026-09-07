@@ -1,4 +1,4 @@
-*Last updated: 06/09/2026*
+*Last updated: 07/09/2026*
 # Sorting Algorithms
 This repository contains my sorting algorithms project. In the following I will explain each separate version, my plans and already achieved capabilities:
 
@@ -15,11 +15,11 @@ The goal in the v0.# versions is to set up an environment where implementing dif
 - resizable screen, columns adapt to screen size automatically
 - a simple way to reshuffle the list
 - a simple way to save, and load saved datasets
+- a way to show which columns the sorting algorithm compares at a given time (highlighting)
 
 **Plans:**
 - a simple way of choosing the current sorting algorithm to be ran
 - a way to track the efficiency of each sorting algorithm
-- a way to show which columns the sorting algorithm compares at a given time (highlighting)
 - *audio-visual features*?
 
 When these features are implemented, the project will move to version v1.#
