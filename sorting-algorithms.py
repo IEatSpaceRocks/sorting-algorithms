@@ -140,6 +140,8 @@ def settingsPlaces():                                               # Used for c
     rects = []                                                      # Empty rects list
     numx = int((width - 14) / (250 + 14))                           # Calculate how many rectangles fit in a row, if a rectangle is at least 250 wide
     numy = int((height - 50 - 14) / (32 + 14))                      # Calculate how many rectangles fit in a column, if a rectangle is at least 32 high
+    if numx == 0 or numy == 0:                                      # If there isn't space for any buttons, return an empty list
+        return []
     wide = (width - 14 * (numx + 1)) / numx                         # Based on numx, how wide can a rectangle be
     high = (height - 50 - 14 * (numy + 1)) / numy                   # Based on numy, how high can a rectangle be
     for y in range(numy):                                               # Create a list of all rect values that a rectangle can take on the setting menu
@@ -169,11 +171,15 @@ def selection_sort(arr):
 
         # Place it at the beginning of the unsorted portion
         arr[i], arr[min_index] = arr[min_index], arr[i]
-         
         drawToolbar()
+        screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if buttons[4]["rect"].collidepoint(event.pos):
+                    return
         drawColumns([arr[min_index], arr[i]])
         pygame.display.flip()
-        pygame.time.Clock().tick(6)
+        pygame.time.Clock().tick(20)
     
     
 
