@@ -1,4 +1,4 @@
-# IEatSpaceRocks, 06/09/2026
+# IEatSpaceRocks, 07/09/2026
 
 
 # SETUP
@@ -14,7 +14,7 @@ for i in range(100):
 random.shuffle(list[0])
 
 # Set up screen
-width, height = 800, 800
+width, height = 600, 800
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
 pygame.display.set_caption("Sorting Algorithms")
 
@@ -94,6 +94,20 @@ buttons = [
     },
 ]
 
+algorithms = ["bubble", "cocktail shaker", "selection"]
+
+
+def settingsPlaces():
+    rects = []
+    numx = int((width - 14) / (250 + 14))
+    numy = int((height - 50 - 14) / (32 + 14))
+    wide = (width - 14 * (numx + 1)) / numx
+    high = (height - 50 - 14 * (numy + 1)) / numy
+    for y in range(numy):
+        for x in range(numx):
+            rects.append((14 + x * (wide + 14), 14 + y * (high + 14) + 50, wide, high))
+    return rects
+            
 
 # MAIN LOOP
 
@@ -134,6 +148,7 @@ while running:
     rect = font.get_rect(text)
     rect.center = ((width - 209) / 2 + 163, 23)
     font.render_to(screen, rect, text, (255, 255, 235))
+    
 
     if mode == "main":
         # Draw columns
@@ -145,6 +160,12 @@ while running:
     else:
         # Draw exit button
         screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))
+        rects = settingsPlaces()
+        for rect in rects:
+            text_rect = font.get_rect("Hello")
+            text_rect.center = (rect[0] + rect[2] / 2, rect[1] + rect[3] / 2)
+            pygame.draw.rect(screen, (200, 200, 200), rect)
+            font.render_to(screen, text_rect, "Hello", (0, 0, 0))
 
     # Update screen
     pygame.display.flip()
