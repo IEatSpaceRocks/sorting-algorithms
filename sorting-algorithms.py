@@ -99,12 +99,6 @@ buttons = [
     },
 ]
 
-algorithms = [
-    {
-    
-    }
-]
-
 
 # Visual functions
 
@@ -152,11 +146,18 @@ def settingsPlaces():                                               # Used for c
 def drawSettings():
     screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Draw exit button over the settings one
     rects = settingsPlaces()                                                # Get the valid rect values for buttons to be at
+    count = 0
+    buttons = []
     for rect in rects:
-        text_rect = font.get_rect("Hello")
+        if count == len(algorithms):
+            return buttons
+        text = algorithms[count]["name"]
+        text_rect = font.get_rect(text)
         text_rect.center = (rect[0] + rect[2] / 2, rect[1] + rect[3] / 2)
         pygame.draw.rect(screen, (200, 200, 200), rect)
-        font.render_to(screen, text_rect, "Hello", (0, 0, 0))
+        font.render_to(screen, text_rect, text, (0, 0, 0))
+        buttons.append(pygame.Rect(rect))
+        count +=1
             
 def selection_sort(arr):
     n = len(arr)
@@ -181,13 +182,29 @@ def selection_sort(arr):
         pygame.display.flip()
         pygame.time.Clock().tick(20)
     
-    
+algorithms = [
+    {
+        "name": "Selection",
+        "action": selection_sort
+    },
+    {
+        "name": "Bubble",
+        "action": selection_sort
+    },
+    {
+        "name": "Cocktail shaker",
+        "action": selection_sort
+    }
+]
+
+settingsRects = []
+
 
 # MAIN LOOP
 
 running = True
 while running:
-    
+
     # Get current screen dimensions
     width, height = screen.get_size()
     
@@ -198,10 +215,12 @@ while running:
         if event.type == pygame.QUIT:                                       # Exit game if X is pressed
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:    # Check if lmb is pressed
+            if mode == "settings":
+                for i in range(len(settingsRects)):
+                    if settingsRects[i].collidepoint(event.pos):
+                        toolbarText = algorithms[i]["name"]
             for button in buttons:
                 if button["rect"].collidepoint(event.pos):                  # Check if any button was pressed
-                    if button["action"] == play:
-                        main = "sorting"
                     toolbarText, mode = button["action"]()                        # Preform button action
 
     
@@ -211,7 +230,7 @@ while running:
         drawColumns([])
     
     elif mode == "settings":
-        drawSettings()
+        settingsRects = drawSettings()
         
     elif mode == "sorting":
         pass
