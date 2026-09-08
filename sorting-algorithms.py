@@ -1,4 +1,4 @@
-# IEatSpaceRocks, 07/09/2026
+# IEatSpaceRocks, 08/09/2026
 
 
 # SETUP
@@ -20,8 +20,8 @@ pygame.display.set_caption("Sorting Algorithms")                        # Name w
 
 # Set up text and mode
 font = pygame.freetype.Font(None, 30)       # Define font to be used
-toolbarText = "Sorting Algorithms"          # Text to be displayed on toolbar
-mode = "main"                               # Mode for the program (main, settings, sorting)
+toolbarText = ["Sorting Algorithms"]          # Text to be displayed on toolbar. Format: [main text, temporary text]
+mode = "main"                               # Mode for the program (main, settings)
 
 # Load images
 def loadImage(name):
@@ -39,63 +39,55 @@ exit = loadImage("exit.png")
 def saveBtn():                      # Used for saving the main list. Only 1 list can be saved at once
     list[1] = []                        # Empty current saved list
     for item in list[0]:                # Add all elements of the main list to the new saved list
-        list[1].append(item)
-    return "Saved", "main"              
+        list[1].append(item)         
     
     
 def loadBtn():                      # Used for loading in the saved list instead of the current main list
     if list[1] != []:                   # If there is a saved list:
         list[0] = []                        # Empty main list
         for item in list[1]:                # Add all elements of the saved list to the main list
-            list[0].append(item)
-        return "Loaded", "main"             
+            list[0].append(item)            
     else:                               # If there isn't a saved list:
-        return toolbarText, mode            # Don't change toolbar text or mode (= do nothing)
+        toolbarText.pop()                   # Don't change toolbar text
         
         
 def shuffleBtn():                   # Used for shuffling the main list
     random.shuffle(list[0])             # Shuffle main list
-    return "Shuffled", "main"
     
     
-def playBtn():
+def playBtn():                      # WIP
     selection_sort(list[0])
-    return "Sorted", "main"
     
-    
-def settingsBtn():                  # Used either for accessing or leaving settings menu
-    if mode == "settings":                  # If settings is already open:
-        return "Sorting Algorithms", "main"     
-    else:                                   # If it isn't:
-        return "Settings", "settings"
-
 
 # Set up buttons
 buttons = [
     {
         "image": save,
+        "text": "Saved current list",
         "rect": save.get_rect(topleft=(7, 7)),
         "action": saveBtn,
     },
     {
         "image": load,
+        "text": "Loaded in saved list",
         "rect": load.get_rect(topleft=(46, 7)),
         "action": loadBtn,
     },
     {
         "image": shuffle,
+        "text": "Shuffled current list",
         "rect": shuffle.get_rect(topleft=(85, 7)),
         "action": shuffleBtn,
     },
     {
         "image": play,
+        "text": "Sorting...",
         "rect": play.get_rect(topleft=(124, 7)),
         "action": playBtn,
     },
     {
         "image": settings,
         "rect": settings.get_rect(topleft=(width - 39, 7)),
-        "action": settingsBtn,
     },
 ]
 
@@ -114,9 +106,9 @@ def drawToolbar():
         screen.blit(button["image"], button["rect"])                        # Buttons
     
     # Draw toolbar text
-    rect = font.get_rect(toolbarText)
+    rect = font.get_rect(toolbarText[-1])
     rect.center = ((width - 209) / 2 + 163, 23)
-    font.render_to(screen, rect, toolbarText, (255, 255, 235))
+    font.render_to(screen, rect, toolbarText[-1], (255, 255, 235))
 
 
 def drawColumns(highlight):
@@ -143,21 +135,23 @@ def settingsPlaces():                                               # Used for c
             rects.append((14 + x * (wide + 14), 14 + y * (high + 14) + 50, wide, high))
     return rects                                                    # Return this list
 
+
 def drawSettings():
     screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Draw exit button over the settings one
     rects = settingsPlaces()                                                # Get the valid rect values for buttons to be at
-    count = 0
-    buttons = []
+    count = 0                                                               # Count how many buttons are drawn in the settings menu
+    buttons = []                                                            # Store each buttons rect value in this list
     for rect in rects:
-        if count == len(algorithms):
-            return buttons
-        text = algorithms[count]["name"]
+        if count == len(algorithms):                                        # If there are already enough buttons for displaying all sorting types:
+            return buttons                                                      # Return a list of their rect values
+        text = algorithms[count]["name"]                                    # Name of sorting algorithm
         text_rect = font.get_rect(text)
         text_rect.center = (rect[0] + rect[2] / 2, rect[1] + rect[3] / 2)
-        pygame.draw.rect(screen, (200, 200, 200), rect)
-        font.render_to(screen, text_rect, text, (0, 0, 0))
-        buttons.append(pygame.Rect(rect))
+        pygame.draw.rect(screen, (200, 200, 200), rect)                     # Draw button
+        font.render_to(screen, text_rect, text, (0, 0, 0))                  # Draw text
+        buttons.append(pygame.Rect(rect))                                   # Add rect value to list
         count +=1
+            
             
 def selection_sort(arr):
     n = len(arr)
@@ -182,7 +176,8 @@ def selection_sort(arr):
         pygame.display.flip()
         pygame.time.Clock().tick(20)
     
-algorithms = [
+    
+algorithms = [                          # WIP
     {
         "name": "Selection",
         "action": selection_sort
@@ -197,7 +192,8 @@ algorithms = [
     }
 ]
 
-settingsRects = []
+settingsRects = []      # List of rect values for selectable algorithms in settings menu
+textTimer = 0           # Timer for displaying temporary toolbar text for the right amount of time
 
 
 # MAIN LOOP
@@ -215,15 +211,33 @@ while running:
         if event.type == pygame.QUIT:                                       # Exit game if X is pressed
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:    # Check if lmb is pressed
-            if mode == "settings":
+            
+            if mode == "settings":                                          # Settings menu
                 for i in range(len(settingsRects)):
                     if settingsRects[i].collidepoint(event.pos):
-                        toolbarText = algorithms[i]["name"]
+                        toolbarText[0] = f"{algorithms[i]["name"]} sort"
+                        
             for button in buttons:
                 if button["rect"].collidepoint(event.pos):                  # Check if any button was pressed
-                    toolbarText, mode = button["action"]()                        # Preform button action
+                    
+                    if button["image"] == settings:                         # If it was the setting/exit button:
+                        if mode == "settings":
+                            mode = "main"
+                        else:
+                            toolbarText[0] = "Settings"
+                            mode = "settings"
+                            
+                    else:                                                   # Otherwise:
+                        toolbarText.append(button["text"])
+                        textTimer = 0
+                        mode = "main"
+                        button["action"]()                                  # Preform button action
 
-    
+    if len(toolbarText) > 1:                        # Handle temporary and permanent toolbar texts
+        if textTimer > 12:
+            toolbarText = [toolbarText[0]]
+        textTimer += 1
+        
     drawToolbar()
     
     if mode == "main":
@@ -231,9 +245,6 @@ while running:
     
     elif mode == "settings":
         settingsRects = drawSettings()
-        
-    elif mode == "sorting":
-        pass
 
     # Update screen
     pygame.display.flip()
