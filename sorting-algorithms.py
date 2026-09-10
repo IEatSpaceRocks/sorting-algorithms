@@ -1,4 +1,4 @@
-# IEatSpaceRocks, 08/09/2026
+# IEatSpaceRocks, 10/09/2026
 
 
 # SETUP
@@ -15,7 +15,7 @@ for i in range(100):                                                    # 100 it
 random.shuffle(list[0])                                                 # Shuffle the list
 
 # Set up screen
-width, height = 600, 800                                                # Recommended screen size, can be changed
+width, height = 1000, 800                                               # Recommended screen size, can be changed
 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)     # Create screen, resizable
 pygame.display.set_caption("Sorting Algorithms")                        # Name window 'Sorting Algorithms
 
@@ -89,7 +89,7 @@ buttons = [
 
 # Visual functions
 
-def drawToolbar():
+def drawToolbar(text):
     # Clear screen
     screen.fill((39, 39, 54))
     
@@ -101,9 +101,9 @@ def drawToolbar():
         screen.blit(button["image"], button["rect"])                        # Buttons
     
     # Draw toolbar text
-    rect = font.get_rect(toolbar_text[-1])
+    rect = font.get_rect(text[-1])
     rect.center = ((width - 209) / 2 + 163, 23)
-    font.render_to(screen, rect, toolbar_text[-1], (255, 255, 235))
+    font.render_to(screen, rect, text[-1], (255, 255, 235))
 
 
 def drawColumns(highlight):
@@ -150,9 +150,9 @@ def drawSettings():
             
 # Sorting Algorithms
 
-def loopHandling(highlight):                                                # Same loophandling to be easily used in every sorting algorithms function
+def loopHandling(highlight, assign, compare):                                                # Same loophandling to be easily used in every sorting algorithms function
     
-    drawToolbar()                                                           # Clear screen, draw toolbar
+    drawToolbar([f"Assigns: {assign} | Comparisons: {compare}"])                                                           # Clear screen, draw toolbar
     screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Add exit button
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -164,6 +164,8 @@ def loopHandling(highlight):                                                # Sa
 
 
 def selectionSort(list):                                                    # Selection sort: (DOCUMENTATION!)
+
+    assign, compare = 0, 0
     
     n = len(list)
     for i in range(n - 1):
@@ -171,12 +173,15 @@ def selectionSort(list):                                                    # Se
         for j in range(i + 1, n):
             if list[j] < list[min_index]:
                 min_index = j
-        list[i], list[min_index] = list[min_index], list[i]
+            compare += 1
+        if list[i] != list[min_index]:
+            list[i], list[min_index] = list[min_index], list[i]
+            assign += 3
         
         
-        running = loopHandling([list[min_index], list[i]])                   # Loophandling and framerate
+        running = loopHandling([list[min_index], list[i]], assign, compare)                   # Loophandling and framerate
         if not running:
-            return
+            return f"Assigns: {assign} | Comparisons: {compare}"
         pygame.time.Clock().tick(20)
     
     
@@ -231,20 +236,17 @@ while running:
                     if button["image"] == settings:                             # If it was the setting/exit button:
                         if mode == "settings":
                             mode = "main"
-                            if selected_algo == None:
-                                toolbar_text[0] = "Sorting Algorithms"
-                            else:
-                                toolbar_text[0] = f"{algorithms[selected_algo]["name"]} sort"
                         else:
-                            toolbar_text[0] = "Settings"
                             mode = "settings"
+                            toolbar_text[0] = "Settings"
                             
                     elif button["image"] == play:                               # If it was the play button:
                         if selected_algo == None:
                             toolbar_text.append("No algorithm selected!")
                             text_timer = 0
                         else:
-                            algorithms[selected_algo]["action"](list[0])
+                            toolbar_text.append(algorithms[selected_algo]["action"](list[0]))
+                            text_timer = -6
                             mode = "main"
                             
                     else:                                                       # Otherwise:
@@ -254,16 +256,24 @@ while running:
                         button["action"]()                                      # Preform button action
 
 
+    print(toolbar_text)
+
     if len(toolbar_text) > 1:                                                   # Handle temporary and permanent toolbar texts
         if text_timer > 12:
             toolbar_text = [toolbar_text[0]]
         text_timer += 1
         
+    if mode == "main":
+        if selected_algo == None:
+            toolbar_text[0] = "Sorting Algorithms"
+        else:
+            toolbar_text[0] = f"{algorithms[selected_algo]["name"]} sort"
+        
     # Draw the appropriate screen
-    drawToolbar()
+    drawToolbar(toolbar_text)
     if mode == "main":
         drawColumns([])
-    elif mode == "settings":
+    else:
         settings_rects = drawSettings()
 
     # Update screen
