@@ -4,15 +4,15 @@
 # SETUP
 
 
-import pygame, random, os, pygame.freetype, math                              # Import libraries
-os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # Changing the directory to the folder that contains 'sorting-algorithms.py'
+import pygame, random, os, pygame.freetype, math                        # Import libraries
+os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # Changing the directory to the folder that contains 'sorting-algorithms.py' and 'assets'
 pygame.init()                                                           # Initialize Pygame
 
 # Create a list and shuffle it
 list = [[], []]                                                         # The list contains 2 lists, the first is the main list, the second is the saved list, if there is one
 for i in range(100):                                                    # 100 items in list, values 1 to 100
     list[0].append(i + 1)
-random.shuffle(list[0])                                                 # Shuffle the list
+random.shuffle(list[0])                                                 # Shuffle the main list
 
 # Set up screen
 width, height = 1000, 800                                               # Recommended screen size, can be changed
@@ -21,12 +21,12 @@ pygame.display.set_caption("Sorting Algorithms")                        # Name w
 
 # Set up text and mode
 font = pygame.freetype.Font(None, 30)                                   # Define font to be used
-toolbar_text = ["Sorting Algorithms"]                                    # Text to be displayed on toolbar. Format: [main text, temporary text]
-mode = "main"                                                           # Mode for the program (main, settings)
+toolbar_text = ["Sorting Algorithms"]                                   # Text to be displayed on toolbar. Format: [main text, temporary text]
+mode = "main"                                                           # Current mode for the program ("main" or "settings")
 
 # Load images
 def loadImage(name):
-    return pygame.image.load(f"assets/{name}").convert()                # Take images from assets folder
+    return pygame.image.load(f"assets/{name}").convert()                # Load images from assets folder
 save = loadImage("save.png")
 load = loadImage("load.png")
 shuffle = loadImage("shuffle.png")
@@ -35,13 +35,14 @@ settings = loadImage("settings.png")
 exit = loadImage("exit.png")
 
 
-# Buttons
+# UI
 
+
+# Set up buttons
 def saveBtn():                              # Used for saving the main list. Only 1 list can be saved at once
     list[1] = []                            # Empty current saved list
     for item in list[0]:                    # Add all elements of the main list to the new saved list
         list[1].append(item)         
-    
     
 def loadBtn():                              # Used for loading in the saved list instead of the current main list
     if list[1] != []:                       # If there is a saved list:
@@ -51,12 +52,10 @@ def loadBtn():                              # Used for loading in the saved list
     else:                                   # If there isn't a saved list:
         toolbar_text.pop()                  # Don't change toolbar text
         
-        
 def shuffleBtn():                           # Used for shuffling the main list
     random.shuffle(list[0])                 # Shuffle main list
         
-        
-# Set up buttons
+
 buttons = [
     {
         "image": save,
@@ -87,8 +86,6 @@ buttons = [
 ]
 
 
-# Visual functions
-
 def drawToolbar(text):
     
     # Draw toolbar and buttons
@@ -96,7 +93,7 @@ def drawToolbar(text):
     pygame.draw.rect(screen, (194, 194, 209), (0, 46, width, 5))            # Separator line
     pygame.draw.rect(screen, (48, 60, 76), (163, 7, width - 209, 32))       # Toolbar text background
     for button in buttons:
-        screen.blit(button["image"], button["rect"])                        # Buttons
+        screen.blit(button["image"], button["rect"])                        # Draw buttons
     
     # Draw toolbar text
     rect = font.get_rect(text[-1])
@@ -115,13 +112,15 @@ def drawColumns(highlight):
         count += 1
 
 
-def settingsPlaces(scroll):                                                       # Used for calculating places for the buttons in the settings menu
-    rects = []                                                              # Empty rects list
-    numx = int((width - 14) / (250 + 14))                                   # Calculate how many rectangles fit in a row, if a rectangle is at least 250 wide
-    wide = (width - 14 * (numx + 1)) / numx                                 # Based on numx, how wide can a rectangle be
-    high = 32                                                               # Create a list of all rect values that a rectangle can take on the setting menu
+def settingsPlaces(scroll):                                                 # Used for calculating places for the buttons in the settings menu
+    rects = []
+    numx = math.floor((width - 14) / (250 + 14))                            # Calculate how many rectangles fit in a row, if a rectangle is at least 250 wide
+    if numx < 1:                                                            # Avoid division by 0 error, if screen is too narrow
+        return []
+    wide = (width - 14 * (numx + 1)) / numx                                 # Based on numx, how wide should a rectangle be
+    high = 32
     for y in range(math.ceil(len(algorithms) / numx)):
-        for x in range(numx):
+        for x in range(numx):                                               # Create a list of all rect values that a rectangle can take on the setting menu
             rects.append((14 + x * (wide + 14), 14 + y * (high + 14) + 50 + scroll * 46, wide, high))
     return rects                                                            # Return this list
 
@@ -129,6 +128,8 @@ def settingsPlaces(scroll):                                                     
 def drawSettings(scroll):
     screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Draw exit button over the settings one
     rects = settingsPlaces(scroll)                                          # Get the valid rect values for buttons to be at
+    if rects == []:                                                         # If screen is too narrow, can't draw buttons
+        return []
     buttons = []                                                            # Store each buttons rect value in this list
     for i in range(len(algorithms)):
         rect = rects[i]
@@ -140,13 +141,15 @@ def drawSettings(scroll):
         buttons.append(pygame.Rect(rect))                                   # Add rect value to list
     return buttons   
             
-# Sorting Algorithms
+            
+# SORTING ALGORITHMS
 
-def loopHandling(highlight, assign, compare):                                                # Same loophandling to be easily used in every sorting algorithms function
+
+def loopHandling(highlight, assign, compare):                               # Loop handling function, to be easily used in every sorting algorithms function
     
-    screen.fill((39, 39, 54))
-    drawToolbar([f"Assigns: {assign} | Comparisons: {compare}"])                                                           # Clear screen, draw toolbar
-    screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Add exit button
+    screen.fill((39, 39, 54))                                               # Clear screen
+    drawToolbar([f"Assigns: {assign} | Comparisons: {compare}"])            # Draw toolbar
+    screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Draw exit button
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if buttons[4]["rect"].collidepoint(event.pos):                  # Exit button functionality
@@ -156,48 +159,43 @@ def loopHandling(highlight, assign, compare):                                   
     return True                                                             # Keep running, if not exited
 
 
-def selectionSort(list):                                                    # Selection sort: (DOCUMENTATION!)
+def selectionSort(list):                                                    # Selection sort
 
-    assign, compare = 0, 0
-    
+    assign, compare = 0, 0                                                  # Variables used for tracking sorting efficiency
     n = len(list)
-    for i in range(n - 1):
-        min_index = i
-        for j in range(i + 1, n):
-            if list[j] < list[min_index]:
+    for i in range(n - 1):                                                  # Go through list from left to right
+        min_index = i                                                       # Pick the first item of the unsorted list to be the smallest
+        for j in range(i + 1, n):                                           # Go through the unsorted part of the list
+            if list[j] < list[min_index]:                                   # Find the smallest item from the unsorted list
                 min_index = j
             compare += 1
         if list[i] != list[min_index]:
-            list[i], list[min_index] = list[min_index], list[i]
-            assign += 3
+            list[i], list[min_index] = list[min_index], list[i]             # Swap the first item of the unsorted list with the smallest
+            assign += 3                                                     # Swaps count as 3 assignments. Swap A and B: A -> temp, B -> A, temp -> B
         
         
-        running = loopHandling([list[min_index], list[i]], assign, compare)                   # Loophandling and framerate
+        running = loopHandling([list[min_index], list[i]], assign, compare)                     # Loophandling
         if not running:
             return f"Assigns: {assign} | Comparisons: {compare}"
-        pygame.time.Clock().tick(20)
+        pygame.time.Clock().tick(20)                                                            # Framerate
     
     
 algorithms = [
     {
         "name": "Selection",
         "action": selectionSort
-    },
-    {
-        "name": "Bubble",
-        "action": ""
-    },
-    {
-        "name": "Cocktail shaker",
-        "action": ""
-    },
+    }
 ]
 
-settings_rects = []      # List of rect values for the buttons in settings menu
-text_timer = 0           # Timer for displaying temporary toolbar text for the right amount of time
-selected_algo = None     # Int value that represents the place of the selected sorting algorithm in the 'algorithms' list
-scroll = 0
-scrolled = 0
+
+# VARIABLES
+
+
+settings_rects = []         # List of rect values for the buttons in settings menu
+text_timer = 0              # Timer for displaying temporary toolbar text for the right amount of time
+selected_algo = None        # Int value that represents the place of the selected sorting algorithm in the 'algorithms' list
+scroll = 0                  # An +/- int value to represent how much the user has scrolled overall in the setting menu (up = +, down = -)
+scrolled = 0                # An + int value to represent how many times has a user scrolled in a given frame
 
 
 # MAIN LOOP
@@ -212,25 +210,27 @@ while running:
     # Update button/hitbox positions
     buttons[4]["rect"] = settings.get_rect(topleft=(width - 39, 7))             # Settings button
     
+    # Reset scrolled count
     scrolled = 0
     
     # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:                                           # Exit game if X is pressed
             running = False
-        elif event.type == pygame.MOUSEWHEEL and mode == "settings":
-            if event.y == -1:
-                if height < (settings_rects[-1][1] + 32 - scrolled * 46):
-                    scroll -= 1
+        elif event.type == pygame.MOUSEWHEEL and mode == "settings":            # Scrolling in settings menu
+            
+            if event.y == -1:                                                   # Scrolled downwards
+                if height < (settings_rects[-1][1] + 32 - scrolled * 46):       # Check, if the available buttons to choose from DON'T fit in the current screen
+                    scroll -= 1                                                 # Scroll down 46 pixels (button + spacing)
                     scrolled += 1
-            if event.y == 1:
-                scroll += 1
-                if scroll > 0:
+            if event.y == 1:                                                    # Scrolled upwards
+                scroll += 1                                                     # Scroll up 46 pixels
+                if scroll > 0:                                                  # If it reaches the top row of buttons, don't scroll higher
                     scroll = 0
                     
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:        # Check if lmb is pressed
             
-            if mode == "settings" and settings_rects != []:                                              # Settings menu
+            if mode == "settings" and settings_rects != []:                     # Settings menu, check sorting algorithm selection buttons
                 for i in range(len(settings_rects)):
                     if settings_rects[i].collidepoint(event.pos):               # If a sorting method is selected:
                         toolbar_text[0] = f"{algorithms[i]["name"]} sort"       # Add it to permanent toolbar text and selected_algo
@@ -263,12 +263,12 @@ while running:
                         button["action"]()                                      # Preform button action
 
 
-    if len(toolbar_text) > 1:                                                   # Handle temporary and permanent toolbar texts
-        if text_timer > 40:
+    if len(toolbar_text) > 1:                                       # Handle temporary and permanent toolbar texts
+        if text_timer > 40:                                         # Show temporary texts for 40 frames
             toolbar_text = [toolbar_text[0]]
         text_timer += 1
         
-    if mode == "main":
+    if mode == "main":                                              # Pick appropriate permanent toolbar text
         if selected_algo == None:
             toolbar_text[0] = "Sorting Algorithms"
         else:
@@ -284,7 +284,7 @@ while running:
 
     # Update screen
     pygame.display.flip()
-    pygame.time.Clock().tick(20)
+    pygame.time.Clock().tick(20)        # Framerate
 
 # Quit pygame
 pygame.quit() 
