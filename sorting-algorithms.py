@@ -1,10 +1,10 @@
-# IEatSpaceRocks, 10/09/2026
+# IEatSpaceRocks, 11/09/2026
 
 
 # SETUP
 
 
-import pygame, random, os, pygame.freetype                              # Import libraries
+import pygame, random, os, pygame.freetype, math                              # Import libraries
 os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # Changing the directory to the folder that contains 'sorting-algorithms.py'
 pygame.init()                                                           # Initialize Pygame
 
@@ -90,8 +90,6 @@ buttons = [
 # Visual functions
 
 def drawToolbar(text):
-    # Clear screen
-    screen.fill((39, 39, 54))
     
     # Draw toolbar and buttons
     pygame.draw.rect(screen, (112, 128, 144), (0, 0, width, 50))            # Toolbar itself
@@ -117,41 +115,36 @@ def drawColumns(highlight):
         count += 1
 
 
-def settingsPlaces():                                                       # Used for calculating places for the buttons in the settings menu
+def settingsPlaces(scroll):                                                       # Used for calculating places for the buttons in the settings menu
     rects = []                                                              # Empty rects list
     numx = int((width - 14) / (250 + 14))                                   # Calculate how many rectangles fit in a row, if a rectangle is at least 250 wide
-    numy = int((height - 50 - 14) / (32 + 14))                              # Calculate how many rectangles fit in a column, if a rectangle is at least 32 high
-    if numx == 0 or numy == 0:                                              # If there isn't space for any buttons, return an empty list
-        return []
     wide = (width - 14 * (numx + 1)) / numx                                 # Based on numx, how wide can a rectangle be
-    high = (height - 50 - 14 * (numy + 1)) / numy                           # Based on numy, how high can a rectangle be
-    for y in range(numy):                                                   # Create a list of all rect values that a rectangle can take on the setting menu
-        for x in range(numx):                                               # Format of list: row1col1, row1col2, row1col3... row2col1, row2col2...
-            rects.append((14 + x * (wide + 14), 14 + y * (high + 14) + 50, wide, high))
+    high = 32                                                               # Create a list of all rect values that a rectangle can take on the setting menu
+    for y in range(math.ceil(len(algorithms) / numx)):
+        for x in range(numx):
+            rects.append((14 + x * (wide + 14), 14 + y * (high + 14) + 50 + scroll * 46, wide, high))
     return rects                                                            # Return this list
 
 
-def drawSettings():
+def drawSettings(scroll):
     screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Draw exit button over the settings one
-    rects = settingsPlaces()                                                # Get the valid rect values for buttons to be at
-    count = 0                                                               # Count how many buttons are drawn in the settings menu
+    rects = settingsPlaces(scroll)                                          # Get the valid rect values for buttons to be at
     buttons = []                                                            # Store each buttons rect value in this list
-    for rect in rects:
-        if count == len(algorithms):                                        # If there are already enough buttons for displaying all sorting types:
-            return buttons                                                      # Return a list of their rect values
-        text = algorithms[count]["name"]                                    # Name of sorting algorithm
+    for i in range(len(algorithms)):
+        rect = rects[i]
+        text = algorithms[i]["name"]
         text_rect = font.get_rect(text)
         text_rect.center = (rect[0] + rect[2] / 2, rect[1] + rect[3] / 2)
         pygame.draw.rect(screen, (200, 200, 200), rect)                     # Draw button
         font.render_to(screen, text_rect, text, (0, 0, 0))                  # Draw text
         buttons.append(pygame.Rect(rect))                                   # Add rect value to list
-        count +=1
-            
+    return buttons   
             
 # Sorting Algorithms
 
 def loopHandling(highlight, assign, compare):                                                # Same loophandling to be easily used in every sorting algorithms function
     
+    screen.fill((39, 39, 54))
     drawToolbar([f"Assigns: {assign} | Comparisons: {compare}"])                                                           # Clear screen, draw toolbar
     screen.blit(exit, exit.get_rect(topleft=(width - 39, 7)))               # Add exit button
     for event in pygame.event.get():
@@ -197,12 +190,14 @@ algorithms = [
     {
         "name": "Cocktail shaker",
         "action": ""
-    }
+    },
 ]
 
 settings_rects = []      # List of rect values for the buttons in settings menu
 text_timer = 0           # Timer for displaying temporary toolbar text for the right amount of time
 selected_algo = None     # Int value that represents the place of the selected sorting algorithm in the 'algorithms' list
+scroll = 0
+scrolled = 0
 
 
 # MAIN LOOP
@@ -217,14 +212,25 @@ while running:
     # Update button/hitbox positions
     buttons[4]["rect"] = settings.get_rect(topleft=(width - 39, 7))             # Settings button
     
+    scrolled = 0
     
     # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:                                           # Exit game if X is pressed
             running = False
+        elif event.type == pygame.MOUSEWHEEL and mode == "settings":
+            if event.y == -1:
+                if height < (settings_rects[-1][1] + 32 - scrolled * 46):
+                    scroll -= 1
+                    scrolled += 1
+            if event.y == 1:
+                scroll += 1
+                if scroll > 0:
+                    scroll = 0
+                    
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:        # Check if lmb is pressed
             
-            if mode == "settings":                                              # Settings menu
+            if mode == "settings" and settings_rects != []:                                              # Settings menu
                 for i in range(len(settings_rects)):
                     if settings_rects[i].collidepoint(event.pos):               # If a sorting method is selected:
                         toolbar_text[0] = f"{algorithms[i]["name"]} sort"       # Add it to permanent toolbar text and selected_algo
@@ -237,6 +243,7 @@ while running:
                         if mode == "settings":
                             mode = "main"
                         else:
+                            scroll = 0
                             mode = "settings"
                             toolbar_text[0] = "Settings"
                             
@@ -246,7 +253,7 @@ while running:
                             text_timer = 0
                         else:
                             toolbar_text.append(algorithms[selected_algo]["action"](list[0]))
-                            text_timer = -6
+                            text_timer = -20
                             mode = "main"
                             
                     else:                                                       # Otherwise:
@@ -256,10 +263,8 @@ while running:
                         button["action"]()                                      # Preform button action
 
 
-    print(toolbar_text)
-
     if len(toolbar_text) > 1:                                                   # Handle temporary and permanent toolbar texts
-        if text_timer > 12:
+        if text_timer > 40:
             toolbar_text = [toolbar_text[0]]
         text_timer += 1
         
@@ -270,15 +275,16 @@ while running:
             toolbar_text[0] = f"{algorithms[selected_algo]["name"]} sort"
         
     # Draw the appropriate screen
-    drawToolbar(toolbar_text)
+    screen.fill((39, 39, 54))
     if mode == "main":
         drawColumns([])
     else:
-        settings_rects = drawSettings()
+        settings_rects = drawSettings(scroll)
+    drawToolbar(toolbar_text)
 
     # Update screen
     pygame.display.flip()
-    pygame.time.Clock().tick(6)
+    pygame.time.Clock().tick(20)
 
 # Quit pygame
 pygame.quit() 
