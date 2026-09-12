@@ -1,4 +1,4 @@
-# IEatSpaceRocks, 11/09/2026
+# IEatSpaceRocks, 12/09/2026
 
 
 # SETUP
@@ -8,11 +8,11 @@ import pygame, random, os, pygame.freetype, math                        # Import
 os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # Changing the directory to the folder that contains 'sorting-algorithms.py' and 'assets'
 pygame.init()                                                           # Initialize Pygame
 
-# Create a list and shuffle it
-list = [[], []]                                                         # The list contains 2 lists, the first is the main list, the second is the saved list, if there is one
-for i in range(100):                                                    # 100 items in list, values 1 to 100
-    list[0].append(i + 1)
-random.shuffle(list[0])                                                 # Shuffle the main list
+# Create an array and shuffle it
+array = [[], []]                                                        # The array contains 2 lists, the first is the main array, the second is the saved array, if there is one
+for i in range(100):                                                    # 100 items in the array, values 1 to 100
+    array[0].append(i + 1)
+random.shuffle(array[0])                                                # Shuffle the main array
 
 # Set up screen
 width, height = 1000, 800                                               # Recommended screen size, can be changed
@@ -39,39 +39,39 @@ exit = loadImage("exit.png")
 
 
 # Set up buttons
-def saveBtn():                              # Used for saving the main list. Only 1 list can be saved at once
-    list[1] = []                            # Empty current saved list
-    for item in list[0]:                    # Add all elements of the main list to the new saved list
-        list[1].append(item)         
+def saveBtn():                              # Used for saving the main array. Only 1 array can be saved at once
+    array[1] = []                           # Empty current saved array
+    for item in array[0]:                   # Add all elements of the main array to the new saved array
+        array[1].append(item)         
     
-def loadBtn():                              # Used for loading in the saved list instead of the current main list
-    if list[1] != []:                       # If there is a saved list:
-        list[0] = []                        # Empty main list
-        for item in list[1]:                # Add all elements of the saved list to the main list
-            list[0].append(item)            
-    else:                                   # If there isn't a saved list:
+def loadBtn():                              # Used for loading in the saved array instead of the current main array
+    if array[1] != []:                      # If there is a saved array:
+        array[0] = []                       # Empty main array
+        for item in array[1]:               # Add all elements of the saved array to the main array
+            array[0].append(item)            
+    else:                                   # If there isn't a saved array:
         toolbar_text.pop()                  # Don't change toolbar text
         
-def shuffleBtn():                           # Used for shuffling the main list
-    random.shuffle(list[0])                 # Shuffle main list
+def shuffleBtn():                           # Used for shuffling the main array
+    random.shuffle(array[0])                # Shuffle main array
         
 
 buttons = [
     {
         "image": save,
-        "text": "Saved current list",
+        "text": "Saved current array",
         "rect": save.get_rect(topleft=(7, 7)),
         "action": saveBtn,
     },
     {
         "image": load,
-        "text": "Loaded in saved list",
+        "text": "Loaded in saved array",
         "rect": load.get_rect(topleft=(46, 7)),
         "action": loadBtn,
     },
     {
         "image": shuffle,
-        "text": "Shuffled current list",
+        "text": "Shuffled current array",
         "rect": shuffle.get_rect(topleft=(85, 7)),
         "action": shuffleBtn,
     },
@@ -103,7 +103,7 @@ def drawToolbar(text):
 
 def drawColumns(highlight):
     count = 0
-    for col in list[0]:                     # Go through each value
+    for col in array[0]:                    # Go through each value
         if col in highlight:
             colour = (255, 255, 235)        # If highlighted, use different colour
         else:
@@ -159,31 +159,61 @@ def loopHandling(highlight, assign, compare):                               # Lo
     return True                                                             # Keep running, if not exited
 
 
-def selectionSort(list):                                                    # Selection sort
+def selectionSort(array):                                                   # Selection sort
 
     assign, compare = 0, 0                                                  # Variables used for tracking sorting efficiency
-    n = len(list)
-    for i in range(n - 1):                                                  # Go through list from left to right
-        min_index = i                                                       # Pick the first item of the unsorted list to be the smallest
-        for j in range(i + 1, n):                                           # Go through the unsorted part of the list
-            if list[j] < list[min_index]:                                   # Find the smallest item from the unsorted list
+    n = len(array)
+    for i in range(n - 1):                                                  # Go through array from left to right
+        min_index = i                                                       # Pick the first item of the unsorted array to be the smallest
+        for j in range(i + 1, n):                                           # Go through the unsorted part of the array
+            if array[j] < array[min_index]:                                 # Find the smallest item from the unsorted array
                 min_index = j
             compare += 1
-        if list[i] != list[min_index]:
-            list[i], list[min_index] = list[min_index], list[i]             # Swap the first item of the unsorted list with the smallest
+        if array[i] != array[min_index]:
+            array[i], array[min_index] = array[min_index], array[i]         # Swap the first item of the unsorted array with the smallest
             assign += 3                                                     # Swaps count as 3 assignments. Swap A and B: A -> temp, B -> A, temp -> B
         
-        
-        running = loopHandling([list[min_index], list[i]], assign, compare)                     # Loophandling
+        running = loopHandling([array[min_index], array[i]], assign, compare)                   # Loophandling
         if not running:
             return f"Assigns: {assign} | Comparisons: {compare}"
         pygame.time.Clock().tick(20)                                                            # Framerate
     
     
+def doubleSelectionSort(array):                                             # Double selection sort
+    
+    assign, compare = 0, 0                                                  # Variables used for tracking sorting efficiency
+    n = len(array)
+    for i in range(n // 2):                                                 # Go through roughly half the array (round down)
+        min_index = i
+        max_index = i
+        for j in range(i + 1, n - i):                                       # Go through unsorted part of the array (middle)
+            if array[j] < array[min_index]:                                 # Find smallest
+                min_index = j
+            if array[j] > array[max_index]:                                 # Find biggest
+                max_index = j
+            compare += 2
+        if max_index == i:                                                  # If i contains the biggest item, it will be swapped to min_index, so set that as max_index
+            max_index = min_index
+        if i != min_index:                                                  # Swap smallest to right place
+            array[i], array[min_index] = array[min_index], array[i]
+            assign += 3
+        if n - i - 1 != max_index:                                          # Swap biggest to right place
+            array[n - i - 1], array[max_index] = array[max_index], array[n - i - 1]
+            assign += 3
+            
+        running = loopHandling([array[min_index], array[max_index], array[i], array[n - i - 1]], assign, compare)       # Loophandling
+        if not running:
+            return f"Assigns: {assign} | Comparisons: {compare}"
+        pygame.time.Clock().tick(20)                                                                                    # Framerate
+    
 algorithms = [
     {
         "name": "Selection",
         "action": selectionSort
+    },
+    {
+        "name": "Double selection",
+        "action": doubleSelectionSort
     }
 ]
 
@@ -252,7 +282,7 @@ while running:
                             toolbar_text.append("No algorithm selected!")
                             text_timer = 0
                         else:
-                            toolbar_text.append(algorithms[selected_algo]["action"](list[0]))
+                            toolbar_text.append(algorithms[selected_algo]["action"](array[0]))
                             text_timer = -20
                             mode = "main"
                             
