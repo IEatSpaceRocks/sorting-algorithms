@@ -10,7 +10,7 @@ pygame.init()                                                           # Initia
 
 # Create an array and shuffle it
 array = [[], []]                                                        # The array contains 2 lists, the first is the main array, the second is the saved array, if there is one
-for i in range(100):                                                    # 100 items in the array, values 1 to 100
+for i in range(250):                                                    # 100 items in the array, values 1 to 100
     array[0].append(i + 1)
 random.shuffle(array[0])                                                # Shuffle the main array
 
@@ -103,12 +103,13 @@ def drawToolbar(text):
 
 def drawColumns(highlight):
     count = 0
+    lenArr = len(array[0])
     for col in array[0]:                    # Go through each value
         if col in highlight:
             colour = (255, 255, 235)        # If highlighted, use different colour
         else:
             colour = (242, 166, 94)
-        pygame.draw.rect(screen, colour, (width / 100 * count, height - (height-51) / 100 * col, width / 100, height))      # Draw a column
+        pygame.draw.rect(screen, colour, (width / lenArr * count, height - (height-51) / lenArr * col, width / lenArr, height))      # Draw a column
         count += 1
 
 
@@ -173,10 +174,10 @@ def selectionSort(array):                                                   # Se
             array[i], array[min_index] = array[min_index], array[i]         # Swap the first item of the unsorted array with the smallest
             assign += 3                                                     # Swaps count as 3 assignments. Swap A and B: A -> temp, B -> A, temp -> B
         
-        running = loopHandling([array[min_index], array[i]], assign, compare)                   # Loophandling
+        running = loopHandling([array[min_index], array[i]], assign, compare)   # Loop handling
         if not running:
             return f"Assigns: {assign} | Comparisons: {compare}"
-        pygame.time.Clock().tick(20)                                                            # Framerate
+        pygame.time.Clock().tick(20)                                            # Framerate
     
     
 def doubleSelectionSort(array):                                             # Double selection sort
@@ -201,7 +202,7 @@ def doubleSelectionSort(array):                                             # Do
             array[n - i - 1], array[max_index] = array[max_index], array[n - i - 1]
             assign += 3
             
-        running = loopHandling([array[min_index], array[max_index], array[i], array[n - i - 1]], assign, compare)       # Loophandling
+        running = loopHandling([array[min_index], array[max_index], array[i], array[n - i - 1]], assign, compare)       # Loop handling
         if not running:
             return f"Assigns: {assign} | Comparisons: {compare}"
         pygame.time.Clock().tick(20)                                                                                    # Framerate
@@ -216,7 +217,7 @@ def insertionSort(array):                                                   # In
         place = i - 1                                                       # Checked value, one before the selected
         while place >= 0:                                                   # Search from selected value backwards, until the array is over
             compare += 1
-            if array[place] < value:                                        # If there is a lower value than the selected, stop searching
+            if array[place] < value:                                        # If there is a lower value than the selected, stop searching (Stable version: <=)
                 break
             array[place + 1] = array[place]                                 # If it isn't smaller, move it one up the array
             assign += 1
@@ -224,11 +225,38 @@ def insertionSort(array):                                                   # In
         array[place + 1] = value                                            # If stopped searching and moving bigger values up the array, insert the current value
         assign += 1
         
-        running = loopHandling([array[place + 1], array[i]], assign, compare)                   # Loophandling (Highlights insertion place and place where the inserted value was (i, so highest sorted value))
+        running = loopHandling([array[place + 1], array[i]], assign, compare)   # Loop handling (Highlights insertion place and place where the inserted value was (i, so highest sorted value))
         if not running:
             return f"Assigns: {assign} | Comparisons: {compare}"
-        pygame.time.Clock().tick(20)                                                            # Framerate
+        pygame.time.Clock().tick(20)                                            # Framerate
+
+
+def binaryInsertionSort(array):                                             # Binary insertion sort
+    
+    assign, compare = 0, 0                                                  # Variables used for tracking sorting efficiency
+    for i in range(1, len(array)):                                          # Go through the array from left to right, starting from the second value
+        value = array[i]                                                    # Temporarily store the selected value
+        assign += 1
+        left, right = 0, i                                                  # Establish the left and right boundaries for where the selected value should go
+        while left < right:                                                 # While the boundaries don't overlap
+            middle = (left + right) // 2                                    # Get their middlepoint
+            if array[middle] < value:                                       # If value belongs to the right of the middle point (Stable version: <=)
+                left = middle + 1                                           # Move left boundary to middle + 1 (middle was already checked, <)
+            else:                                                           # If value belongs to the left of the middle point:
+                right = middle                                              # Move right boundary
+            compare += 1
+        place = left                                                        # Place of insertion will be the value that both left and right take up (could be '= right' too)
+        for j in range(i - place):                                          # Move all values right of insertion place one up the array
+            array[i - j] = array[i - j - 1]
+            assign += 1
+        array[place] = value                                                # Insert value
+        assign += 1
         
+        running = loopHandling([array[place], array[i]], assign, compare)       # Loop handling (Highlights insertion place and place where the inserted value was (i, so highest sorted value))
+        if not running:
+            return f"Assigns: {assign} | Comparisons: {compare}"
+        pygame.time.Clock().tick(20)                                            # Framerate
+    
     
 algorithms = [
     {
@@ -242,6 +270,10 @@ algorithms = [
     {
         "name": "Insertion",
         "action": insertionSort
+    },
+    {
+        "name": "Binary insertion",
+        "action": binaryInsertionSort
     }
 ]
 
