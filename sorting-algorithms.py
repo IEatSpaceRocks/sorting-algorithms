@@ -205,6 +205,30 @@ def doubleSelectionSort(array):                                             # Do
         if not running:
             return f"Assigns: {assign} | Comparisons: {compare}"
         pygame.time.Clock().tick(20)                                                                                    # Framerate
+        
+        
+def insertionSort(array):                                                   # Insertion sort
+    
+    assign, compare = 0, 0                                                  # Variables used for tracking sorting efficiency
+    for i in range(1, len(array)):                                          # Go through the array from left to right, starting from the second value
+        value = array[i]                                                    # Temporarily store the selected value
+        assign += 1
+        place = i - 1                                                       # Checked value, one before the selected
+        while place >= 0:                                                   # Search from selected value backwards, until the array is over
+            compare += 1
+            if array[place] < value:                                        # If there is a lower value than the selected, stop searching
+                break
+            array[place + 1] = array[place]                                 # If it isn't smaller, move it one up the array
+            assign += 1
+            place -= 1                                                      # Move one down the array
+        array[place + 1] = value                                            # If stopped searching and moving bigger values up the array, insert the current value
+        assign += 1
+        
+        running = loopHandling([array[place + 1], array[i]], assign, compare)                   # Loophandling (Highlights insertion place and place where the inserted value was (i, so highest sorted value))
+        if not running:
+            return f"Assigns: {assign} | Comparisons: {compare}"
+        pygame.time.Clock().tick(20)                                                            # Framerate
+        
     
 algorithms = [
     {
@@ -214,6 +238,10 @@ algorithms = [
     {
         "name": "Double selection",
         "action": doubleSelectionSort
+    },
+    {
+        "name": "Insertion",
+        "action": insertionSort
     }
 ]
 
