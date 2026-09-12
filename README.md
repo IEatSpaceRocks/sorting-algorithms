@@ -37,6 +37,7 @@ I will build a linux and windows executable file for each version, and upload th
 **History:**
 - v1.0: Selection sort
 - v1.1: Double selection sort
+- v1.2: Insertion sort
 
 ### v2.0 - v#.#
 Any additional versions will be created when development moves into a substantially different phase.
